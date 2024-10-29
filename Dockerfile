@@ -12,8 +12,7 @@ ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
 #install packages
 RUN apk add --update --upgrade --no-cache jq bash curl git gettext libintl py-pip age
-RUN apk add sops --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-
+RUN apk add sops --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 #install kubectl
 RUN curl -sL -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl; \
     chmod +x /usr/local/bin/kubectl
