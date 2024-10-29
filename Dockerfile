@@ -2,7 +2,7 @@ FROM alpine/helm:3.12.3
 LABEL maintainer "Yann David (@Typositoire) <davidyann88@gmail>"
 
 #Versions for gcloud,kubectl,doctl
-ARG KUBERNETES_VERSION=1.21.5
+ARG KUBERNETES_VERSION=1.27.16
 ARG GCLOUD_VERSION=416.0.0
 ARG DOCTL_VERSION=1.57.0
 ARG HELM_PLUGINS_TO_INSTALL="https://github.com/databus23/helm-diff https://github.com/jkroepke/helm-secrets"
