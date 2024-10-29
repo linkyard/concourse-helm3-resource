@@ -37,7 +37,7 @@ test_logs=$(jq -r '.params.test_logs // "false"' < $payload)
 devel=$(jq -r '.params.devel // "false"' < $payload)
 force=$(jq -r '.params.force // "false"' < $payload)
 show_diff=$(jq -r '.params.show_diff // "false"' < $payload)
-dryrun=$(jq -r '.params.dryrun // "false"' < $payload)
+diff_only=$(jq -r '.params.diff_only // "false"' < $payload)
 post_renderer=$(jq -r '.params.post_renderer // ""' < $payload)
 reuse_values=$(jq -r '.params.reuse_values // "false"' < $payload)
 reset_values=$(jq -r '.params.reset_values // "false"' < $payload)
@@ -180,10 +180,6 @@ helm_upgrade() {
     upgrade_args+=("--dry-run")
   fi
 
-  if [ "$dryrun" == "true" ]; then
-    upgrade_args+=("--dry-run")
-  fi
-
   if [ -n "$version" ]; then
     if [ -f "$source/$version" ]; then
       version=$(cat $source/$version)
@@ -241,16 +237,17 @@ helm_upgrade() {
     $helm_bin "${helm_depup_args[@]}" | tee "$logfile"
   fi
 
-  if [ "$show_diff" = true ] ; then
+  if [ "$show_diff" = true ] || [ "$diff_only" = true ] ; then
     echo "Release diff:"
     $helm_bin diff --no-color=false "${helm_diff_args[@]}" | tee "$logfile"
   fi
 
-  echo "Running command helm ${helm_echo_args[@]} | tee $logfile"
-  upgrade_result=$($helm_bin "${helm_args[@]}" | tee "$logfile")
-  echo "$upgrade_result"
-
-  deployed_release=$(echo $upgrade_result | head -n 1 | awk '{ print $2 }')
+  if [ "$diff_only" != true ] ; then
+    echo "Running command helm ${helm_echo_args[@]} | tee $logfile"
+    upgrade_result=$($helm_bin "${helm_args[@]}" | tee "$logfile")
+    echo "$upgrade_result"
+    deployed_release=$(echo $upgrade_result | head -n 1 | awk '{ print $2 }')
+  fi
 
   if [ -n "$wait" ] && [ "$wait" -gt "0" ]; then
     echo "Waiting for $wait Seconds"
@@ -325,7 +322,7 @@ else
   echo "Installing $release"
   helm_upgrade
 
-  if [ "$debug" != "true" ]; then
+  if [ "$debug" != "true" ] || [ "$diff_only" = "true" ] ; then
     # If release is empty
     if [ -z "$release" ]; then
       release=$deployed_release
